@@ -1,0 +1,199 @@
+<script setup>
+import { ref, computed, onMounted } from 'vue';
+
+const users = ref([]);
+const search = ref('');
+const loading = ref(true);
+
+onMounted(async () => {
+  const res = await fetch('https://jsonplaceholder.typicode.com/users');
+  users.value = await res.json();
+  loading.value = false;
+});
+
+const filteredUsers = computed(() =>
+  users.value.filter(user =>
+    user.name.toLowerCase().includes(search.value.toLowerCase())
+  )
+);
+
+function initials(name) {
+  return name.split(' ').map(word => word[0]).join('').slice(0, 2).toUpperCase();
+}
+</script>
+
+<template>
+  <div class="page">
+    <header class="topbar">
+      <div class="brand">Meridian&nbsp;Partners</div>
+      <nav class="nav">Team Directory</nav>
+    </header>
+
+    <section class="hero">
+      <h1>Our Team</h1>
+      <p>Meet the people behind Meridian Partners — search the directory below.</p>
+      <input
+        type="text"
+        class="search"
+        placeholder="Search by name..."
+        v-model="search"
+      />
+    </section>
+
+    <main class="grid">
+      <p v-if="!loading" class="results-count">
+        {{ filteredUsers.length }} of {{ users.length }} team members
+      </p>
+
+      <p v-if="loading" class="empty">Loading team members...</p>
+
+      <div v-for="user in filteredUsers" :key="user.id" class="card">
+        <div class="avatar">{{ initials(user.name) }}</div>
+        <h2>{{ user.name }}</h2>
+        <p class="role">{{ user.company.catchPhrase }}</p>
+        <div class="meta">
+          <span>{{ user.email }}</span>
+          <span>{{ user.company.name }}</span>
+        </div>
+      </div>
+
+      <p v-if="!loading && filteredUsers.length === 0" class="empty">
+        No team members match "{{ search }}".
+      </p>
+    </main>
+
+    <footer class="footer">
+      © 2026 Keegan Sanger — Built with Vue.js
+    </footer>
+  </div>
+</template>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600&display=swap');
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  color: #1E2A32;
+  font-family: 'Inter', sans-serif;
+}
+
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-image: url('./assets/background1.png');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
+.topbar {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  background: #16232E;
+  color: #F5F5F2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 48px;
+  box-sizing: border-box;
+}
+
+.brand { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 600; }
+.nav { font-size: 14px; color: #A9B7C2; text-transform: uppercase; letter-spacing: 0.5px; }
+
+.hero {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  background: linear-gradient(rgba(22, 35, 46, 0.85), rgba(22, 35, 46, 0.85));
+  color: #F5F5F2;
+  padding: 56px 48px 40px;
+  box-sizing: border-box;
+}
+.hero h1 { font-family: 'Fraunces', serif; font-size: 40px; font-weight: 600; margin: 0 0 8px; }
+.hero p { color: #A9B7C2; margin: 0 0 24px; font-size: 15px; }
+
+.search {
+  width: 100%;
+  max-width: 420px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid #2E3F4C;
+  background: #1E2E3A;
+  color: #F5F5F2;
+  font-size: 14px;
+}
+.search::placeholder { color: #7C8A96; }
+.search:focus { outline: none; border-color: #C08A4E; }
+
+.grid {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  background: rgba(245, 245, 242, 0.85);
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 20px;
+  padding: 40px 48px;
+}
+
+.results-count {
+  grid-column: 1 / -1;
+  font-size: 13px;
+  color: #7C8A96;
+  margin: 0 0 4px;
+}
+
+.card {
+  background: #FFFFFF;
+  border: 1px solid #E4E1D8;
+  border-radius: 10px;
+  padding: 24px;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+.card:hover { box-shadow: 0 8px 20px rgba(22, 35, 46, 0.08); transform: translateY(-2px); }
+
+.avatar {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: #C08A4E;
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 16px;
+}
+
+.card h2 {
+  font-family: 'Fraunces', serif;
+  font-size: 24px;
+  font-weight: 600;
+  color: #16232E;
+  margin: 0 0 6px;
+  line-height: 1.15;
+}
+.role { font-size: 13px; color: #5B6B77; margin: 0 0 16px; font-style: italic; }
+
+.meta {
+  display: flex; flex-direction: column; gap: 4px;
+  font-size: 13px; color: #7C8A96;
+  border-top: 1px solid #EFEDE6;
+  padding-top: 12px;
+}
+
+.empty { grid-column: 1 / -1; text-align: center; color: #7C8A96; padding: 40px 0; }
+
+.footer {
+  text-align: center;
+  padding: 20px;
+  font-size: 12px;
+  color: #7C8A96;
+  border-top: 1px solid #E4E1D8;
+}
+</style>
